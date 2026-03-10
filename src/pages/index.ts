@@ -16,30 +16,30 @@ const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString()
 const monthLabel = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' })
 
-const [productsRes, salesRes, goodsInRes, salesTotalRes, goodsInTotalRes] = await Promise.all([
+const [productsRes, salesAllRes, goodsInAllRes] = await Promise.all([
   supabase.from('products').select('id, quantity'),
   supabase.from('sales').select('id, sell_price, quantity, sale_date, products(name)')
-    .gte('sale_date', monthStart).lt('sale_date', monthEnd)
     .order('sale_date', { ascending: false }),
   supabase.from('goods_in').select('id, purchase_price, quantity, created_at, products(name, reward_multiplier)')
-    .gte('created_at', monthStart).lt('created_at', monthEnd)
     .order('created_at', { ascending: false }),
-  supabase.from('sales').select('sell_price, quantity'),
-  supabase.from('goods_in').select('purchase_price, quantity'),
 ])
 
 const products = productsRes.data ?? []
-const sales = salesRes.data ?? []
-const goodsIn = goodsInRes.data ?? []
+const salesAll = (salesAllRes.data ?? []) as unknown as { id: string; sell_price: number; quantity: number; sale_date: string; products: { name: string } | null }[]
+const goodsInAll = (goodsInAllRes.data ?? []) as unknown as { id: string; purchase_price: number; quantity: number; created_at: string; products: { name: string; reward_multiplier: number } | null }[]
+
+// Split into month vs all-time in JS — single pass each
+const sales = salesAll.filter((s) => s.sale_date >= monthStart && s.sale_date < monthEnd)
+const goodsIn = goodsInAll.filter((g) => g.created_at >= monthStart && g.created_at < monthEnd)
 
 const totalProducts = products.length
 const lowStock = products.filter((p) => p.quantity <= 5)
-const totalSalesIncome = (salesTotalRes.data ?? []).reduce((sum, s) => sum + s.sell_price * s.quantity, 0)
-const totalGoodsInSpend = (goodsInTotalRes.data ?? []).reduce((sum, g) => sum + g.purchase_price * g.quantity, 0)
+const totalSalesIncome = salesAll.reduce((sum, s) => sum + s.sell_price * s.quantity, 0)
+const totalGoodsInSpend = goodsInAll.reduce((sum, g) => sum + g.purchase_price * g.quantity, 0)
 
-const monthSalesTotal = (sales as unknown as { sell_price: number; quantity: number }[]).reduce((sum, s) => sum + s.sell_price * s.quantity, 0)
-const monthGoodsInTotal = (goodsIn as unknown as { purchase_price: number; quantity: number; products: { reward_multiplier: number } | null }[]).reduce((sum, g) => sum + g.purchase_price * g.quantity, 0)
-const monthGoodsInReward = (goodsIn as unknown as { purchase_price: number; quantity: number; products: { reward_multiplier: number } | null }[]).reduce((sum, g) => sum + (g.products?.reward_multiplier ?? 0) * g.purchase_price * g.quantity, 0)
+const monthSalesTotal = sales.reduce((sum, s) => sum + s.sell_price * s.quantity, 0)
+const monthGoodsInTotal = goodsIn.reduce((sum, g) => sum + g.purchase_price * g.quantity, 0)
+const monthGoodsInReward = goodsIn.reduce((sum, g) => sum + (g.products?.reward_multiplier ?? 0) * g.purchase_price * g.quantity, 0)
 
 app.innerHTML = `
   <h1 class="text-2xl font-bold text-gray-900 mb-6">首页</h1>
@@ -51,7 +51,10 @@ app.innerHTML = `
     </div>
     <div class="bg-white rounded-xl shadow-sm p-5 border ${lowStock.length > 0 ? 'border-red-200 bg-red-50' : 'border-gray-100'}">
       <p class="text-sm ${lowStock.length > 0 ? 'text-red-500' : 'text-gray-500'}">库存预警（≤ 5）</p>
-      <p class="text-3xl font-bold ${lowStock.length > 0 ? 'text-red-600' : 'text-gray-900'} mt-1">${lowStock.length}</p>
+      <div class="flex items-baseline gap-3 mt-1">
+        <p class="text-3xl font-bold ${lowStock.length > 0 ? 'text-red-600' : 'text-gray-900'}">${lowStock.length}</p>
+        ${lowStock.length > 0 ? `<a href="${url('/pages/products.html')}" class="text-xs text-red-500 hover:underline">查看低库存产品 →</a>` : ''}
+      </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
       <p class="text-sm text-gray-500">累计销售额</p>
@@ -87,7 +90,7 @@ app.innerHTML = `
                 ${sales
                   .map(
                     (s) => `<tr class="border-b last:border-0">
-                  <td class="py-2">${(s.products as unknown as { name: string } | null)?.name ?? '—'}</td>
+                  <td class="py-2">${s.products?.name ?? '—'}</td>
                   <td class="py-2">${s.quantity}</td>
                   <td class="py-2 text-gray-400">${new Date(s.sale_date).toLocaleDateString('zh-CN')}</td>
                   <td class="py-2 text-right text-gray-700">¥${(s.sell_price * s.quantity).toFixed(2)}</td>
@@ -122,13 +125,13 @@ app.innerHTML = `
                 ${goodsIn
                   .map(
                     (g) => {
-                      const prod = (g.products as unknown as { name: string; reward_multiplier: number } | null)
+                      const prod = g.products
                       return `<tr class="border-b last:border-0">
                   <td class="py-2">${prod?.name ?? '—'}</td>
                   <td class="py-2">${g.quantity}</td>
                   <td class="py-2 text-gray-400">${new Date(g.created_at).toLocaleDateString('zh-CN')}</td>
-                  <td class="py-2 text-right text-gray-700">¥${((g as unknown as { purchase_price: number }).purchase_price * g.quantity).toFixed(2)}</td>
-                  <td class="py-2 text-right text-indigo-600">${((prod?.reward_multiplier ?? 0) * (g as unknown as { purchase_price: number }).purchase_price * g.quantity).toFixed(1)}</td>
+                  <td class="py-2 text-right text-gray-700">¥${(g.purchase_price * g.quantity).toFixed(2)}</td>
+                  <td class="py-2 text-right text-indigo-600">${((prod?.reward_multiplier ?? 0) * g.purchase_price * g.quantity).toFixed(1)}</td>
                 </tr>`
                     },
                   )
