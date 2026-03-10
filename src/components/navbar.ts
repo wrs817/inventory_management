@@ -3,7 +3,7 @@ import { url, navigate } from '../lib/navigate'
 
 export function renderNavbar(container: HTMLElement, activePage: string): void {
   const links = [
-    { href: url('/index.html'), label: '控制台', icon: '🏠' },
+    { href: url('/index.html'), label: '首页', icon: '🏠' },
     { href: url('/pages/products.html'), label: '产品', icon: '📦' },
     { href: url('/pages/sales.html'), label: '销售', icon: '💰' },
     { href: url('/pages/goods-in.html'), label: '入库', icon: '📥' },

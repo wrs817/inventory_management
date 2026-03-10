@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { url } from '../lib/navigate'
 
 await requireAuth()
-renderNavbar(document.getElementById('navbar')!, '控制台')
+renderNavbar(document.getElementById('navbar')!, '首页')
 
 const app = document.getElementById('app')!
 app.innerHTML = `<p class="text-gray-400 text-sm">加载中…</p>`
@@ -25,7 +25,7 @@ const lowStock = products.filter((p) => p.quantity <= 5)
 const totalValue = sales.reduce((sum, s) => sum + s.sell_price * s.quantity, 0)
 
 app.innerHTML = `
-  <h1 class="text-2xl font-bold text-gray-900 mb-6">控制台</h1>
+  <h1 class="text-2xl font-bold text-gray-900 mb-6">首页</h1>
 
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
