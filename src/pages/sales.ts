@@ -30,11 +30,11 @@ if (error) {
       </a>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="-mx-6 sm:mx-0 bg-white sm:rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
       ${
         sales.length === 0
           ? '<p class="text-sm text-gray-400 p-6">暂无销售记录。</p>'
-          : `<table class="w-full text-sm">
+          : `<table class="min-w-full text-sm whitespace-nowrap">
               <thead class="bg-gray-50 text-gray-500 text-left">
                 <tr>
                   <th class="px-4 py-3 font-medium">日期</th>
