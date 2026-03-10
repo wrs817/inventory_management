@@ -1,31 +1,35 @@
-import '../style.css'
-import { requireAuth } from '../auth'
-import { renderNavbar } from '../components/navbar'
-import { supabase } from '../lib/supabase'
-import type { Product } from '../types'
-import { CATEGORIES } from '../types'
-import { url, navigate } from '../lib/navigate'
+import "../style.css";
+import { requireAuth } from "../auth";
+import { renderNavbar } from "../components/navbar";
+import { supabase } from "../lib/supabase";
+import type { Product } from "../types";
+import { CATEGORIES } from "../types";
+import { url, navigate } from "../lib/navigate";
 
-await requireAuth()
-renderNavbar(document.getElementById('navbar')!, '产品')
+await requireAuth();
+renderNavbar(document.getElementById("navbar")!, "产品");
 
-const app = document.getElementById('app')!
-const id = new URLSearchParams(window.location.search).get('id')
+const app = document.getElementById("app")!;
+const id = new URLSearchParams(window.location.search).get("id");
 
 if (!id) {
-  navigate('/pages/products.html')
+  navigate("/pages/products.html");
 }
 
-const { data, error: fetchError } = await supabase.from('products').select('*').eq('id', id!).single()
+const { data, error: fetchError } = await supabase
+  .from("products")
+  .select("*")
+  .eq("id", id!)
+  .single();
 
 if (fetchError || !data) {
-  app.innerHTML = `<p class="text-red-500 text-sm">未找到产品。</p>`
+  app.innerHTML = `<p class="text-red-500 text-sm">未找到产品。</p>`;
 } else {
-  const product = data as Product
+  const product = data as Product;
 
   app.innerHTML = `
     <div class="mb-6">
-      <a href="${url('/pages/products.html')}" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
+      <a href="${url("/pages/products.html")}" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
       <h1 class="text-2xl font-bold text-gray-900 mt-2">编辑产品</h1>
     </div>
 
@@ -41,7 +45,7 @@ if (fetchError || !data) {
           <label class="block text-sm font-medium text-gray-700 mb-1">分类</label>
           <select id="category"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-            ${CATEGORIES.map((c) => `<option value="${c}" ${c === product.category ? 'selected' : ''}>${c}</option>`).join('')}
+            ${CATEGORIES.map((c) => `<option value="${c}" ${c === product.category ? "selected" : ""}>${c}</option>`).join("")}
           </select>
         </div>
         <div>
@@ -67,36 +71,45 @@ if (fetchError || !data) {
         </div>
       </form>
     </div>
-  `
+  `;
 
-  const form = document.getElementById('product-form') as HTMLFormElement
-  const errorMsg = document.getElementById('error-msg')!
+  const form = document.getElementById("product-form") as HTMLFormElement;
+  const errorMsg = document.getElementById("error-msg")!;
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault()
-    errorMsg.classList.add('hidden')
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.classList.add("hidden");
 
-    const { error } = await supabase.from('products').update({
-      name: (document.getElementById('name') as HTMLInputElement).value.trim(),
-      category: (document.getElementById('category') as HTMLSelectElement).value,
-      reward_multiplier: parseFloat((document.getElementById('reward_multiplier') as HTMLInputElement).value),
-    }).eq('id', id!)
+    const { error } = await supabase
+      .from("products")
+      .update({
+        name: (
+          document.getElementById("name") as HTMLInputElement
+        ).value.trim(),
+        category: (document.getElementById("category") as HTMLSelectElement)
+          .value,
+        reward_multiplier: parseFloat(
+          (document.getElementById("reward_multiplier") as HTMLInputElement)
+            .value,
+        ),
+      })
+      .eq("id", id!);
 
     if (error) {
-      errorMsg.textContent = error.message
-      errorMsg.classList.remove('hidden')
+      errorMsg.textContent = error.message;
+      errorMsg.classList.remove("hidden");
     } else {
-      navigate('/pages/products.html')
+      navigate("/pages/products.html");
     }
-  })
+  });
 
-  document.getElementById('delete-btn')?.addEventListener('click', async () => {
-    if (!confirm(`删除"${product.name}"？此操作无法撤销。`)) return
-    const { error } = await supabase.from('products').delete().eq('id', id!)
+  document.getElementById("delete-btn")?.addEventListener("click", async () => {
+    if (!confirm(`删除"${product.name}"？此操作无法撤销。`)) return;
+    const { error } = await supabase.from("products").delete().eq("id", id!);
     if (error) {
-      alert(error.message)
+      alert(error.message);
     } else {
-      navigate('/pages/products.html')
+      navigate("/pages/products.html");
     }
-  })
+  });
 }

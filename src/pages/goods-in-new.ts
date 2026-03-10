@@ -1,21 +1,24 @@
-import '../style.css'
-import { requireAuth, getUser } from '../auth'
-import { renderNavbar } from '../components/navbar'
-import { supabase } from '../lib/supabase'
-import type { Product } from '../types'
-import { url, navigate } from '../lib/navigate'
+import "../style.css";
+import { requireAuth, getUser } from "../auth";
+import { renderNavbar } from "../components/navbar";
+import { supabase } from "../lib/supabase";
+import type { Product } from "../types";
+import { url, navigate } from "../lib/navigate";
 
-await requireAuth()
-renderNavbar(document.getElementById('navbar')!, '入库')
+await requireAuth();
+renderNavbar(document.getElementById("navbar")!, "入库");
 
-const app = document.getElementById('app')!
+const app = document.getElementById("app")!;
 
-const { data: products } = await supabase.from('products').select('id, name').order('name')
-const productList = (products ?? []) as Pick<Product, 'id' | 'name'>[]
+const { data: products } = await supabase
+  .from("products")
+  .select("id, name")
+  .order("name");
+const productList = (products ?? []) as Pick<Product, "id" | "name">[];
 
 app.innerHTML = `
   <div class="mb-6">
-    <a href="${url('/pages/goods-in.html')}" class="text-sm text-indigo-600 hover:underline">← 返回入库列表</a>
+    <a href="${url("/pages/goods-in.html")}" class="text-sm text-indigo-600 hover:underline">← 返回入库列表</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-2">记录入库</h1>
   </div>
 
@@ -27,7 +30,7 @@ app.innerHTML = `
         <select id="product_id" required
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <option value="">— 请选择产品 —</option>
-          ${productList.map((p) => `<option value="${p.id}">${p.name}</option>`).join('')}
+          ${productList.map((p) => `<option value="${p.id}">${p.name}</option>`).join("")}
         </select>
       </div>
       <div class="grid grid-cols-2 gap-4">
@@ -50,29 +53,34 @@ app.innerHTML = `
       </div>
     </form>
   </div>
-`
+`;
 
-const form = document.getElementById('goods-in-form') as HTMLFormElement
-const errorMsg = document.getElementById('error-msg')!
+const form = document.getElementById("goods-in-form") as HTMLFormElement;
+const errorMsg = document.getElementById("error-msg")!;
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  errorMsg.classList.add('hidden')
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorMsg.classList.add("hidden");
 
-  const user = await getUser()
-  if (!user) return
+  const user = await getUser();
+  if (!user) return;
 
-  const { error } = await supabase.from('goods_in').insert({
+  const { error } = await supabase.from("goods_in").insert({
     user_id: user.id,
-    product_id: (document.getElementById('product_id') as HTMLSelectElement).value,
-    quantity: parseInt((document.getElementById('quantity') as HTMLInputElement).value),
-    purchase_price: parseFloat((document.getElementById('purchase_price') as HTMLInputElement).value),
-  })
+    product_id: (document.getElementById("product_id") as HTMLSelectElement)
+      .value,
+    quantity: parseInt(
+      (document.getElementById("quantity") as HTMLInputElement).value,
+    ),
+    purchase_price: parseFloat(
+      (document.getElementById("purchase_price") as HTMLInputElement).value,
+    ),
+  });
 
   if (error) {
-    errorMsg.textContent = error.message
-    errorMsg.classList.remove('hidden')
+    errorMsg.textContent = error.message;
+    errorMsg.classList.remove("hidden");
   } else {
-    navigate('/pages/goods-in.html')
+    navigate("/pages/goods-in.html");
   }
-})
+});

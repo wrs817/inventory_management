@@ -1,30 +1,30 @@
-import '../style.css'
-import { requireAuth } from '../auth'
-import { renderNavbar } from '../components/navbar'
-import { supabase } from '../lib/supabase'
-import type { GoodsIn } from '../types'
-import { url } from '../lib/navigate'
+import "../style.css";
+import { requireAuth } from "../auth";
+import { renderNavbar } from "../components/navbar";
+import { supabase } from "../lib/supabase";
+import type { GoodsIn } from "../types";
+import { url } from "../lib/navigate";
 
-await requireAuth()
-renderNavbar(document.getElementById('navbar')!, '入库')
+await requireAuth();
+renderNavbar(document.getElementById("navbar")!, "入库");
 
-const app = document.getElementById('app')!
-app.innerHTML = `<p class="text-gray-400 text-sm">Loading…</p>`
+const app = document.getElementById("app")!;
+app.innerHTML = `<p class="text-gray-400 text-sm">Loading…</p>`;
 
 const { data, error } = await supabase
-  .from('goods_in')
-  .select('*, products(name, reward_multiplier)')
-  .order('created_at', { ascending: false })
+  .from("goods_in")
+  .select("*, products(name, reward_multiplier)")
+  .order("created_at", { ascending: false });
 
 if (error) {
-  app.innerHTML = `<p class="text-red-500 text-sm">${error.message}</p>`
+  app.innerHTML = `<p class="text-red-500 text-sm">${error.message}</p>`;
 } else {
-  const records = (data ?? []) as GoodsIn[]
+  const records = (data ?? []) as GoodsIn[];
 
   app.innerHTML = `
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-900">入库记录</h1>
-      <a href="${url('/pages/goods-in-new.html')}"
+      <a href="${url("/pages/goods-in-new.html")}"
         class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
         + 记录入库
       </a>
@@ -50,8 +50,8 @@ if (error) {
                   .map(
                     (g) => `
                   <tr class="border-t border-gray-100 hover:bg-gray-50">
-                    <td class="px-4 py-3 text-gray-500">${new Date(g.created_at).toLocaleDateString('zh-CN')}</td>
-                    <td class="px-4 py-3 font-medium text-gray-900">${(g.products as unknown as { name: string; reward_multiplier: number } | null)?.name ?? '—'}</td>
+                    <td class="px-4 py-3 text-gray-500">${new Date(g.created_at).toLocaleDateString("zh-CN")}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900">${(g.products as unknown as { name: string; reward_multiplier: number } | null)?.name ?? "—"}</td>
                     <td class="px-4 py-3 text-gray-700">${g.quantity}</td>
                     <td class="px-4 py-3 text-gray-700">¥${g.purchase_price.toFixed(2)}</td>
                     <td class="px-4 py-3 font-medium text-gray-900">¥${(g.purchase_price * g.quantity).toFixed(2)}</td>
@@ -59,10 +59,10 @@ if (error) {
                   </tr>
                 `,
                   )
-                  .join('')}
+                  .join("")}
               </tbody>
             </table>`
       }
     </div>
-  `
+  `;
 }

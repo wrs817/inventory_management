@@ -1,13 +1,13 @@
-import { supabase } from '../lib/supabase'
-import { url, navigate } from '../lib/navigate'
+import { supabase } from "../lib/supabase";
+import { url, navigate } from "../lib/navigate";
 
 export function renderNavbar(container: HTMLElement, activePage: string): void {
   const links = [
-    { href: url('/index.html'), label: '首页', icon: '🏠' },
-    { href: url('/pages/products.html'), label: '产品', icon: '📦' },
-    { href: url('/pages/sales.html'), label: '销售', icon: '💰' },
-    { href: url('/pages/goods-in.html'), label: '入库', icon: '📥' },
-  ]
+    { href: url("/index.html"), label: "首页", icon: "🏠" },
+    { href: url("/pages/products.html"), label: "产品", icon: "📦" },
+    { href: url("/pages/sales.html"), label: "销售", icon: "💰" },
+    { href: url("/pages/goods-in.html"), label: "入库", icon: "📥" },
+  ];
 
   container.innerHTML = `
     <nav class="bg-gray-900 text-white shadow-md">
@@ -21,12 +21,12 @@ export function renderNavbar(container: HTMLElement, activePage: string): void {
               (l) => `
             <a href="${l.href}"
               class="text-sm font-medium px-3 py-1.5 rounded transition
-                ${activePage === l.label ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">
+                ${activePage === l.label ? "bg-indigo-600 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"}">
               ${l.label}
             </a>
           `,
             )
-            .join('')}
+            .join("")}
           <button id="logout-btn"
             class="text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-1.5 rounded transition ml-2">
             退出登录
@@ -51,38 +51,40 @@ export function renderNavbar(container: HTMLElement, activePage: string): void {
             (l) => `
           <a href="${l.href}"
             class="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition
-              ${activePage === l.label ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">
+              ${activePage === l.label ? "bg-indigo-600 text-white" : "text-gray-300 hover:text-white hover:bg-gray-700"}">
             <span>${l.icon}</span>${l.label}
           </a>
         `,
           )
-          .join('')}
+          .join("")}
         <button id="logout-btn-mobile"
           class="flex items-center gap-3 w-full px-3 py-2.5 rounded text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 transition">
           <span>🚪</span>退出登录
         </button>
       </div>
     </nav>
-  `
+  `;
 
   // Hamburger toggle
-  const menuBtn = document.getElementById('menu-btn')
-  const mobileMenu = document.getElementById('mobile-menu')
-  const iconOpen = document.getElementById('icon-open')
-  const iconClose = document.getElementById('icon-close')
+  const menuBtn = document.getElementById("menu-btn");
+  const mobileMenu = document.getElementById("mobile-menu");
+  const iconOpen = document.getElementById("icon-open");
+  const iconClose = document.getElementById("icon-close");
 
-  menuBtn?.addEventListener('click', () => {
-    const isOpen = !mobileMenu?.classList.contains('hidden')
-    mobileMenu?.classList.toggle('hidden', isOpen)
-    iconOpen?.classList.toggle('hidden', !isOpen)
-    iconClose?.classList.toggle('hidden', isOpen)
-  })
+  menuBtn?.addEventListener("click", () => {
+    const isOpen = !mobileMenu?.classList.contains("hidden");
+    mobileMenu?.classList.toggle("hidden", isOpen);
+    iconOpen?.classList.toggle("hidden", !isOpen);
+    iconClose?.classList.toggle("hidden", isOpen);
+  });
 
   const logout = async () => {
-    await supabase.auth.signOut()
-    navigate('/pages/login.html')
-  }
+    await supabase.auth.signOut();
+    navigate("/pages/login.html");
+  };
 
-  document.getElementById('logout-btn')?.addEventListener('click', logout)
-  document.getElementById('logout-btn-mobile')?.addEventListener('click', logout)
+  document.getElementById("logout-btn")?.addEventListener("click", logout);
+  document
+    .getElementById("logout-btn-mobile")
+    ?.addEventListener("click", logout);
 }

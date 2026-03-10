@@ -1,8 +1,8 @@
-import '../style.css'
-import { supabase } from '../lib/supabase'
-import { navigate } from '../lib/navigate'
+import "../style.css";
+import { supabase } from "../lib/supabase";
+import { navigate } from "../lib/navigate";
 
-const app = document.getElementById('app')!
+const app = document.getElementById("app")!;
 
 app.innerHTML = `
   <div class="bg-white rounded-2xl shadow-sm p-8 space-y-6">
@@ -28,24 +28,25 @@ app.innerHTML = `
       </button>
     </form>
   </div>
-`
+`;
 
-const form = document.getElementById('login-form') as HTMLFormElement
-const errorMsg = document.getElementById('error-msg')!
+const form = document.getElementById("login-form") as HTMLFormElement;
+const errorMsg = document.getElementById("error-msg")!;
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  errorMsg.classList.add('hidden')
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorMsg.classList.add("hidden");
 
-  const email = (document.getElementById('email') as HTMLInputElement).value
-  const password = (document.getElementById('password') as HTMLInputElement).value
+  const email = (document.getElementById("email") as HTMLInputElement).value;
+  const password = (document.getElementById("password") as HTMLInputElement)
+    .value;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    errorMsg.textContent = error.message
-    errorMsg.classList.remove('hidden')
+    errorMsg.textContent = error.message;
+    errorMsg.classList.remove("hidden");
   } else {
-    navigate('/index.html')
+    navigate("/index.html");
   }
-})
+});

@@ -4,10 +4,10 @@
  * GitHub Pages (base = '/inventory_management/').
  */
 export function url(path: string): string {
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
-  return `${base}${path}`
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return `${base}${path}`;
 }
 
 export function navigate(path: string): void {
-  window.location.href = url(path)
+  window.location.href = url(path);
 }

@@ -1,18 +1,18 @@
-import '../style.css'
-import { requireAuth, getUser } from '../auth'
-import { renderNavbar } from '../components/navbar'
-import { supabase } from '../lib/supabase'
-import { url, navigate } from '../lib/navigate'
-import { CATEGORIES } from '../types'
+import "../style.css";
+import { requireAuth, getUser } from "../auth";
+import { renderNavbar } from "../components/navbar";
+import { supabase } from "../lib/supabase";
+import { url, navigate } from "../lib/navigate";
+import { CATEGORIES } from "../types";
 
-await requireAuth()
-renderNavbar(document.getElementById('navbar')!, '产品')
+await requireAuth();
+renderNavbar(document.getElementById("navbar")!, "产品");
 
-const app = document.getElementById('app')!
+const app = document.getElementById("app")!;
 
 app.innerHTML = `
   <div class="mb-6">
-    <a href="${url('/pages/products.html')}" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
+    <a href="${url("/pages/products.html")}" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-2">新增产品</h1>
   </div>
 
@@ -28,7 +28,7 @@ app.innerHTML = `
         <label class="block text-sm font-medium text-gray-700 mb-1">分类</label>
         <select id="category"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-          ${CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join('')}
+          ${CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
         </select>
       </div>
       <div>
@@ -44,30 +44,32 @@ app.innerHTML = `
       </div>
     </form>
   </div>
-`
+`;
 
-const form = document.getElementById('product-form') as HTMLFormElement
-const errorMsg = document.getElementById('error-msg')!
+const form = document.getElementById("product-form") as HTMLFormElement;
+const errorMsg = document.getElementById("error-msg")!;
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  errorMsg.classList.add('hidden')
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorMsg.classList.add("hidden");
 
-  const user = await getUser()
-  if (!user) return
+  const user = await getUser();
+  if (!user) return;
 
-  const { error } = await supabase.from('products').insert({
+  const { error } = await supabase.from("products").insert({
     user_id: user.id,
-    name: (document.getElementById('name') as HTMLInputElement).value.trim(),
-    category: (document.getElementById('category') as HTMLSelectElement).value,
-    reward_multiplier: parseFloat((document.getElementById('reward_multiplier') as HTMLInputElement).value),
+    name: (document.getElementById("name") as HTMLInputElement).value.trim(),
+    category: (document.getElementById("category") as HTMLSelectElement).value,
+    reward_multiplier: parseFloat(
+      (document.getElementById("reward_multiplier") as HTMLInputElement).value,
+    ),
     quantity: 0,
-  })
+  });
 
   if (error) {
-    errorMsg.textContent = error.message
-    errorMsg.classList.remove('hidden')
+    errorMsg.textContent = error.message;
+    errorMsg.classList.remove("hidden");
   } else {
-    navigate('/pages/products.html')
+    navigate("/pages/products.html");
   }
-})
+});

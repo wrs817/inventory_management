@@ -1,23 +1,29 @@
-import '../style.css'
-import { requireAuth, getUser } from '../auth'
-import { renderNavbar } from '../components/navbar'
-import { supabase } from '../lib/supabase'
-import type { Product } from '../types'
-import { url, navigate } from '../lib/navigate'
+import "../style.css";
+import { requireAuth, getUser } from "../auth";
+import { renderNavbar } from "../components/navbar";
+import { supabase } from "../lib/supabase";
+import type { Product } from "../types";
+import { url, navigate } from "../lib/navigate";
 
-await requireAuth()
-renderNavbar(document.getElementById('navbar')!, '销售')
+await requireAuth();
+renderNavbar(document.getElementById("navbar")!, "销售");
 
-const app = document.getElementById('app')!
+const app = document.getElementById("app")!;
 
-const { data: products } = await supabase.from('products').select('id, name, quantity').order('name')
-const productList = (products ?? []) as Pick<Product, 'id' | 'name' | 'quantity'>[]
+const { data: products } = await supabase
+  .from("products")
+  .select("id, name, quantity")
+  .order("name");
+const productList = (products ?? []) as Pick<
+  Product,
+  "id" | "name" | "quantity"
+>[];
 
-const today = new Date().toISOString().split('T')[0]
+const today = new Date().toISOString().split("T")[0];
 
 app.innerHTML = `
   <div class="mb-6">
-    <a href="${url('/pages/sales.html')}" class="text-sm text-indigo-600 hover:underline">← 返回销售列表</a>
+    <a href="${url("/pages/sales.html")}" class="text-sm text-indigo-600 hover:underline">← 返回销售列表</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-2">记录销售</h1>
   </div>
 
@@ -29,7 +35,7 @@ app.innerHTML = `
         <select id="product_id" required
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <option value="">— 请选择产品 —</option>
-          ${productList.map((p) => `<option value="${p.id}">${p.name}（库存：${p.quantity}）</option>`).join('')}
+          ${productList.map((p) => `<option value="${p.id}">${p.name}（库存：${p.quantity}）</option>`).join("")}
         </select>
       </div>
       <div>
@@ -62,42 +68,49 @@ app.innerHTML = `
       </div>
     </form>
   </div>
-`
+`;
 
-const form = document.getElementById('sale-form') as HTMLFormElement
-const errorMsg = document.getElementById('error-msg')!
+const form = document.getElementById("sale-form") as HTMLFormElement;
+const errorMsg = document.getElementById("error-msg")!;
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  errorMsg.classList.add('hidden')
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorMsg.classList.add("hidden");
 
-  const user = await getUser()
-  if (!user) return
+  const user = await getUser();
+  if (!user) return;
 
-  const productId = (document.getElementById('product_id') as HTMLSelectElement).value
-  const quantity = parseInt((document.getElementById('quantity') as HTMLInputElement).value)
+  const productId = (document.getElementById("product_id") as HTMLSelectElement)
+    .value;
+  const quantity = parseInt(
+    (document.getElementById("quantity") as HTMLInputElement).value,
+  );
 
   // Check there's enough stock
-  const product = productList.find((p) => p.id === productId)
+  const product = productList.find((p) => p.id === productId);
   if (product && quantity > product.quantity) {
-    errorMsg.textContent = `库存不足，当前库存：${product.quantity}`
-    errorMsg.classList.remove('hidden')
-    return
+    errorMsg.textContent = `库存不足，当前库存：${product.quantity}`;
+    errorMsg.classList.remove("hidden");
+    return;
   }
 
-  const { error } = await supabase.from('sales').insert({
+  const { error } = await supabase.from("sales").insert({
     user_id: user.id,
     product_id: productId,
-    customer: (document.getElementById('customer') as HTMLInputElement).value.trim(),
+    customer: (
+      document.getElementById("customer") as HTMLInputElement
+    ).value.trim(),
     quantity,
-    sell_price: parseFloat((document.getElementById('sell_price') as HTMLInputElement).value),
-    sale_date: (document.getElementById('sale_date') as HTMLInputElement).value,
-  })
+    sell_price: parseFloat(
+      (document.getElementById("sell_price") as HTMLInputElement).value,
+    ),
+    sale_date: (document.getElementById("sale_date") as HTMLInputElement).value,
+  });
 
   if (error) {
-    errorMsg.textContent = error.message
-    errorMsg.classList.remove('hidden')
+    errorMsg.textContent = error.message;
+    errorMsg.classList.remove("hidden");
   } else {
-    navigate('/pages/sales.html')
+    navigate("/pages/sales.html");
   }
-})
+});
