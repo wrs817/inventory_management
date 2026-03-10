@@ -3,6 +3,7 @@ import { requireAuth } from '../auth'
 import { renderNavbar } from '../components/navbar'
 import { supabase } from '../lib/supabase'
 import type { Product } from '../types'
+import { url, navigate } from '../lib/navigate'
 
 await requireAuth()
 renderNavbar(document.getElementById('navbar')!, '产品')
@@ -11,7 +12,7 @@ const app = document.getElementById('app')!
 const id = new URLSearchParams(window.location.search).get('id')
 
 if (!id) {
-  window.location.href = '/pages/products.html'
+  navigate('/pages/products.html')
 }
 
 const { data, error: fetchError } = await supabase.from('products').select('*').eq('id', id!).single()
@@ -23,7 +24,7 @@ if (fetchError || !data) {
 
   app.innerHTML = `
     <div class="mb-6">
-      <a href="/pages/products.html" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
+      <a href="${url('/pages/products.html')}" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
       <h1 class="text-2xl font-bold text-gray-900 mt-2">编辑产品</h1>
     </div>
 
@@ -82,7 +83,7 @@ if (fetchError || !data) {
       errorMsg.textContent = error.message
       errorMsg.classList.remove('hidden')
     } else {
-      window.location.href = '/pages/products.html'
+      navigate('/pages/products.html')
     }
   })
 
@@ -92,7 +93,7 @@ if (fetchError || !data) {
     if (error) {
       alert(error.message)
     } else {
-      window.location.href = '/pages/products.html'
+      navigate('/pages/products.html')
     }
   })
 }

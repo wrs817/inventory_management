@@ -1,5 +1,6 @@
 import '../style.css'
 import { supabase } from '../lib/supabase'
+import { url, navigate } from '../lib/navigate'
 
 const app = document.getElementById('app')!
 
@@ -27,7 +28,7 @@ app.innerHTML = `
       </button>
     </form>
     <p class="text-center text-sm text-gray-500">
-      没有账号？<a href="/pages/register.html" class="text-indigo-600 hover:underline">立即注册</a>
+      没有账号？<a href="${url('/pages/register.html')}" class="text-indigo-600 hover:underline">立即注册</a>
     </p>
   </div>
 `
@@ -48,6 +49,6 @@ form.addEventListener('submit', async (e) => {
     errorMsg.textContent = error.message
     errorMsg.classList.remove('hidden')
   } else {
-    window.location.href = '/index.html'
+    navigate('/index.html')
   }
 })

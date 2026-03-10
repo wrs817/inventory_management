@@ -1,5 +1,6 @@
 import '../style.css'
 import { supabase } from '../lib/supabase'
+import { url } from '../lib/navigate'
 
 const app = document.getElementById('app')!
 
@@ -28,7 +29,7 @@ app.innerHTML = `
       </button>
     </form>
     <p class="text-center text-sm text-gray-500">
-      已有账号？<a href="/pages/login.html" class="text-indigo-600 hover:underline">立即登录</a>
+      已有账号？<a href="${url('/pages/login.html')}" class="text-indigo-600 hover:underline">立即登录</a>
     </p>
   </div>
 `

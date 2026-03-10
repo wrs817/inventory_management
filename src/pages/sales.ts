@@ -3,6 +3,7 @@ import { requireAuth } from '../auth'
 import { renderNavbar } from '../components/navbar'
 import { supabase } from '../lib/supabase'
 import type { Sale } from '../types'
+import { url } from '../lib/navigate'
 
 await requireAuth()
 renderNavbar(document.getElementById('navbar')!, '销售')
@@ -23,7 +24,7 @@ if (error) {
   app.innerHTML = `
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-900">销售</h1>
-      <a href="/pages/sales-new.html"
+      <a href="${url('/pages/sales-new.html')}"
         class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition">
         + 记录销售
       </a>

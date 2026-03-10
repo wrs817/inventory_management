@@ -1,4 +1,5 @@
 import { supabase } from './lib/supabase'
+import { navigate } from './lib/navigate'
 
 /**
  * Call at the top of every protected page.
@@ -7,7 +8,7 @@ import { supabase } from './lib/supabase'
 export async function requireAuth(): Promise<void> {
   const { data } = await supabase.auth.getSession()
   if (!data.session) {
-    window.location.href = '/pages/login.html'
+    navigate('/pages/login.html')
   }
 }
 

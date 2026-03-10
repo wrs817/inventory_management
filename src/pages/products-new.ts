@@ -2,6 +2,7 @@ import '../style.css'
 import { requireAuth, getUser } from '../auth'
 import { renderNavbar } from '../components/navbar'
 import { supabase } from '../lib/supabase'
+import { url, navigate } from '../lib/navigate'
 
 await requireAuth()
 renderNavbar(document.getElementById('navbar')!, '产品')
@@ -10,7 +11,7 @@ const app = document.getElementById('app')!
 
 app.innerHTML = `
   <div class="mb-6">
-    <a href="/pages/products.html" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
+    <a href="${url('/pages/products.html')}" class="text-sm text-indigo-600 hover:underline">← 返回产品列表</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-2">新增产品</h1>
   </div>
 
@@ -64,6 +65,6 @@ form.addEventListener('submit', async (e) => {
     errorMsg.textContent = error.message
     errorMsg.classList.remove('hidden')
   } else {
-    window.location.href = '/pages/products.html'
+    navigate('/pages/products.html')
   }
 })

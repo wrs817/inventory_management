@@ -3,6 +3,7 @@ import { requireAuth, getUser } from '../auth'
 import { renderNavbar } from '../components/navbar'
 import { supabase } from '../lib/supabase'
 import type { Product } from '../types'
+import { url, navigate } from '../lib/navigate'
 
 await requireAuth()
 renderNavbar(document.getElementById('navbar')!, '入库')
@@ -14,7 +15,7 @@ const productList = (products ?? []) as Pick<Product, 'id' | 'name'>[]
 
 app.innerHTML = `
   <div class="mb-6">
-    <a href="/pages/goods-in.html" class="text-sm text-indigo-600 hover:underline">← 返回入库列表</a>
+    <a href="${url('/pages/goods-in.html')}" class="text-sm text-indigo-600 hover:underline">← 返回入库列表</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-2">记录入库</h1>
   </div>
 
@@ -72,6 +73,6 @@ form.addEventListener('submit', async (e) => {
     errorMsg.textContent = error.message
     errorMsg.classList.remove('hidden')
   } else {
-    window.location.href = '/pages/goods-in.html'
+    navigate('/pages/goods-in.html')
   }
 })

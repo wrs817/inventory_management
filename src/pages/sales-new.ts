@@ -3,6 +3,7 @@ import { requireAuth, getUser } from '../auth'
 import { renderNavbar } from '../components/navbar'
 import { supabase } from '../lib/supabase'
 import type { Product } from '../types'
+import { url, navigate } from '../lib/navigate'
 
 await requireAuth()
 renderNavbar(document.getElementById('navbar')!, '销售')
@@ -16,7 +17,7 @@ const today = new Date().toISOString().split('T')[0]
 
 app.innerHTML = `
   <div class="mb-6">
-    <a href="/pages/sales.html" class="text-sm text-indigo-600 hover:underline">← 返回销售列表</a>
+    <a href="${url('/pages/sales.html')}" class="text-sm text-indigo-600 hover:underline">← 返回销售列表</a>
     <h1 class="text-2xl font-bold text-gray-900 mt-2">记录销售</h1>
   </div>
 
@@ -97,6 +98,6 @@ form.addEventListener('submit', async (e) => {
     errorMsg.textContent = error.message
     errorMsg.classList.remove('hidden')
   } else {
-    window.location.href = '/pages/sales.html'
+    navigate('/pages/sales.html')
   }
 })

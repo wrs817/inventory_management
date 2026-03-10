@@ -2,6 +2,7 @@ import '../style.css'
 import { requireAuth } from '../auth'
 import { renderNavbar } from '../components/navbar'
 import { supabase } from '../lib/supabase'
+import { url } from '../lib/navigate'
 
 await requireAuth()
 renderNavbar(document.getElementById('navbar')!, '控制台')
@@ -45,7 +46,7 @@ app.innerHTML = `
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-semibold text-gray-800">最近销售</h2>
-        <a href="/pages/sales.html" class="text-sm text-indigo-600 hover:underline">查看全部</a>
+        <a href="${url('/pages/sales.html')}" class="text-sm text-indigo-600 hover:underline">查看全部</a>
       </div>
       ${
         sales.length === 0
@@ -72,7 +73,7 @@ app.innerHTML = `
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-semibold text-gray-800">最近入库</h2>
-        <a href="/pages/goods-in.html" class="text-sm text-indigo-600 hover:underline">查看全部</a>
+        <a href="${url('/pages/goods-in.html')}" class="text-sm text-indigo-600 hover:underline">查看全部</a>
       </div>
       ${
         goodsIn.length === 0
