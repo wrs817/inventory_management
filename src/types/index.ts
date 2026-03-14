@@ -9,6 +9,7 @@ export interface Product {
   reward_multiplier: number;
   category: Category;
   quantity: number;
+  barcode: string | null;
   created_at: string;
 }
 

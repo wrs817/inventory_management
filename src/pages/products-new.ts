@@ -36,6 +36,11 @@ app.innerHTML = `
         <input id="reward_multiplier" type="number" step="0.01" min="0" value="1"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
       </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">条形码 / 二维码</label>
+        <input id="barcode" type="text" placeholder="可选，用于扫码快速选产品"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
       <div class="pt-2">
         <button type="submit"
           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 rounded-lg text-sm transition">
@@ -56,6 +61,8 @@ form.addEventListener("submit", async (e) => {
   const user = await getUser();
   if (!user) return;
 
+  const barcodeVal = (document.getElementById("barcode") as HTMLInputElement).value.trim();
+
   const { error } = await supabase.from("products").insert({
     user_id: user.id,
     name: (document.getElementById("name") as HTMLInputElement).value.trim(),
@@ -63,6 +70,7 @@ form.addEventListener("submit", async (e) => {
     reward_multiplier: parseFloat(
       (document.getElementById("reward_multiplier") as HTMLInputElement).value,
     ),
+    barcode: barcodeVal || null,
     quantity: 0,
   });
 

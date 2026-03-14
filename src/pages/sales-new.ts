@@ -4,6 +4,7 @@ import { renderNavbar } from "../components/navbar";
 import { supabase } from "../lib/supabase";
 import type { Product } from "../types";
 import { url, navigate } from "../lib/navigate";
+import { renderScanButton } from "../components/barcode-scanner";
 
 await requireAuth();
 renderNavbar(document.getElementById("navbar")!, "销售");
@@ -12,11 +13,11 @@ const app = document.getElementById("app")!;
 
 const { data: products } = await supabase
   .from("products")
-  .select("id, name, quantity")
+  .select("id, name, quantity, barcode")
   .order("name");
 const productList = (products ?? []) as Pick<
   Product,
-  "id" | "name" | "quantity"
+  "id" | "name" | "quantity" | "barcode"
 >[];
 
 const today = new Date().toISOString().split("T")[0];
@@ -37,6 +38,7 @@ app.innerHTML = `
           <option value="">— 请选择产品 —</option>
           ${productList.map((p) => `<option value="${p.id}">${p.name}（库存：${p.quantity}）</option>`).join("")}
         </select>
+        <div id="scan-btn-container"></div>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">客户 <span class="text-red-500">*</span></label>
@@ -72,6 +74,18 @@ app.innerHTML = `
 
 const form = document.getElementById("sale-form") as HTMLFormElement;
 const errorMsg = document.getElementById("error-msg")!;
+const productSelect = document.getElementById("product_id") as HTMLSelectElement;
+
+// Wire up scan button
+renderScanButton(document.getElementById("scan-btn-container")!, (barcode) => {
+  const match = productList.find((p) => p.barcode === barcode);
+  if (match) {
+    productSelect.value = match.id;
+  } else {
+    errorMsg.textContent = `未找到条形码对应的产品：${barcode}`;
+    errorMsg.classList.remove("hidden");
+  }
+});
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();

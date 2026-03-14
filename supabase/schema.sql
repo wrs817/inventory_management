@@ -14,8 +14,12 @@ CREATE TABLE products (
   category          text NOT NULL DEFAULT '',
   reward_multiplier numeric NOT NULL DEFAULT 1,
   quantity          integer NOT NULL DEFAULT 0,
+  barcode           text,
   created_at        timestamptz NOT NULL DEFAULT now()
 );
+
+-- Run this if the table already exists:
+-- ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode text;
 
 CREATE TABLE sales (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
