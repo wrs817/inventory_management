@@ -20,6 +20,10 @@ CREATE TABLE products (
 
 -- Run this if the table already exists:
 -- ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode text;
+-- ALTER TABLE sales ADD COLUMN IF NOT EXISTS notes text;
+-- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS notes text;
+-- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS can_collect_reward_points boolean NOT NULL DEFAULT true;
+-- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS reward_points numeric NOT NULL DEFAULT 0;
 
 CREATE TABLE sales (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -29,16 +33,20 @@ CREATE TABLE sales (
   sell_price  numeric NOT NULL,
   quantity    integer NOT NULL CHECK (quantity > 0),
   sale_date   timestamptz NOT NULL DEFAULT now(),
+  notes       text,
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE goods_in (
-  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id        uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_id     uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  purchase_price numeric NOT NULL,
-  quantity       integer NOT NULL CHECK (quantity > 0),
-  created_at     timestamptz NOT NULL DEFAULT now()
+  id                        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                   uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  product_id                uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  purchase_price            numeric NOT NULL,
+  quantity                  integer NOT NULL CHECK (quantity > 0),
+  can_collect_reward_points boolean NOT NULL DEFAULT true,
+  reward_points             numeric NOT NULL DEFAULT 0,
+  notes                     text,
+  created_at                timestamptz NOT NULL DEFAULT now()
 );
 
 -- ============================================================
@@ -81,8 +89,48 @@ CREATE TRIGGER trg_add_stock
 AFTER INSERT ON goods_in
 FOR EACH ROW EXECUTE FUNCTION add_stock_on_goods_in();
 
+-- Calculate reward_points when goods_in is inserted
+CREATE OR REPLACE FUNCTION calc_reward_points_on_goods_in()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_multiplier numeric;
+BEGIN
+  IF NEW.can_collect_reward_points THEN
+    SELECT reward_multiplier INTO v_multiplier FROM products WHERE id = NEW.product_id;
+    NEW.reward_points := COALESCE(v_multiplier, 0) * NEW.purchase_price * NEW.quantity;
+  ELSE
+    NEW.reward_points := 0;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_calc_reward_points
+BEFORE INSERT ON goods_in
+FOR EACH ROW EXECUTE FUNCTION calc_reward_points_on_goods_in();
+
 -- ============================================================
--- 3. ROW LEVEL SECURITY
+-- 3. INDEXES
+-- ============================================================
+
+-- products: list ordered by name, filter by category, search by name
+CREATE INDEX idx_products_user_name     ON products (user_id, name);
+CREATE INDEX idx_products_user_category ON products (user_id, category);
+CREATE INDEX idx_products_name_trgm     ON products USING gin (name gin_trgm_ops);
+
+-- sales: list ordered by sale_date, FK join
+CREATE INDEX idx_sales_user_sale_date ON sales (user_id, sale_date DESC);
+CREATE INDEX idx_sales_product_id     ON sales (product_id);
+
+-- goods_in: list ordered by created_at, FK join
+CREATE INDEX idx_goods_in_user_created_at ON goods_in (user_id, created_at DESC);
+CREATE INDEX idx_goods_in_product_id      ON goods_in (product_id);
+
+-- ============================================================
+-- 4. ROW LEVEL SECURITY
 -- ============================================================
 
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;

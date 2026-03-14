@@ -23,7 +23,7 @@ const monthLabel = now.toLocaleDateString("zh-CN", {
   month: "long",
 });
 
-const [productsRes, salesAllRes, goodsInAllRes] = await Promise.all([
+const [productsRes, salesAllRes, goodsInAllRes, salesMonthRes, goodsInMonthRes] = await Promise.all([
   supabase.from("products").select("id, quantity"),
   supabase
     .from("sales")
@@ -31,9 +31,20 @@ const [productsRes, salesAllRes, goodsInAllRes] = await Promise.all([
     .order("sale_date", { ascending: false }),
   supabase
     .from("goods_in")
-    .select(
-      "id, purchase_price, quantity, created_at, products(name, reward_multiplier)",
-    )
+    .select("id, purchase_price, quantity, reward_points, created_at, products(name)")
+    .order("created_at", { ascending: false }),
+  // month-only for the dashboard tables
+  supabase
+    .from("sales")
+    .select("id, sell_price, quantity, sale_date, products(name)")
+    .gte("sale_date", monthStart)
+    .lt("sale_date", monthEnd)
+    .order("sale_date", { ascending: false }),
+  supabase
+    .from("goods_in")
+    .select("id, purchase_price, quantity, reward_points, created_at, products(name)")
+    .gte("created_at", monthStart)
+    .lt("created_at", monthEnd)
     .order("created_at", { ascending: false }),
 ]);
 
@@ -49,17 +60,25 @@ const goodsInAll = (goodsInAllRes.data ?? []) as unknown as {
   id: string;
   purchase_price: number;
   quantity: number;
+  reward_points: number;
   created_at: string;
-  products: { name: string; reward_multiplier: number } | null;
+  products: { name: string } | null;
 }[];
-
-// Split into month vs all-time in JS — single pass each
-const sales = salesAll.filter(
-  (s) => s.sale_date >= monthStart && s.sale_date < monthEnd,
-);
-const goodsIn = goodsInAll.filter(
-  (g) => g.created_at >= monthStart && g.created_at < monthEnd,
-);
+const sales = (salesMonthRes.data ?? []) as unknown as {
+  id: string;
+  sell_price: number;
+  quantity: number;
+  sale_date: string;
+  products: { name: string } | null;
+}[];
+const goodsIn = (goodsInMonthRes.data ?? []) as unknown as {
+  id: string;
+  purchase_price: number;
+  quantity: number;
+  reward_points: number;
+  created_at: string;
+  products: { name: string } | null;
+}[];
 
 const lowStock = products.filter((p) => p.quantity <= 5);
 const totalSalesIncome = salesAll.reduce(
@@ -80,8 +99,7 @@ const monthGoodsInTotal = goodsIn.reduce(
   0,
 );
 const monthGoodsInReward = goodsIn.reduce(
-  (sum, g) =>
-    sum + (g.products?.reward_multiplier ?? 0) * g.purchase_price * g.quantity,
+  (sum, g) => sum + g.reward_points,
   0,
 );
 
@@ -164,13 +182,12 @@ app.innerHTML = `
               <tbody>
                 ${goodsIn
                   .map((g) => {
-                    const prod = g.products;
                     return `<tr class="border-b last:border-0">
-                  <td class="py-2" style="width:5em"><div style="width:5em;word-break:break-all">${prod?.name ?? "—"}</div></td>
+                  <td class="py-2" style="width:5em"><div style="width:5em;word-break:break-all">${g.products?.name ?? "—"}</div></td>
                   <td class="py-2 text-center">${g.quantity}</td>
                   <td class="py-2 text-gray-400">${new Date(g.created_at).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}</td>
                   <td class="py-2 text-right text-gray-700">¥${(g.purchase_price * g.quantity).toFixed(2)}</td>
-                  <td class="py-2 text-right text-indigo-600">${((prod?.reward_multiplier ?? 0) * g.purchase_price * g.quantity).toFixed(1)}</td>
+                  <td class="py-2 text-right text-indigo-600">${g.reward_points.toFixed(1)}</td>
                 </tr>`;
                   })
                   .join("")}

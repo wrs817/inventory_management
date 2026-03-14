@@ -43,6 +43,7 @@ if (error) {
                   <th class="px-4 py-3 font-medium">数量</th>
                   <th class="px-4 py-3 font-medium">单价</th>
                   <th class="px-4 py-3 font-medium">总计</th>
+                  <th class="px-4 py-3 font-medium">备注</th>
                 </tr>
               </thead>
               <tbody>
@@ -56,6 +57,7 @@ if (error) {
                     <td class="px-4 py-3 text-gray-700">${s.quantity}</td>
                     <td class="px-4 py-3 text-gray-700">¥${s.sell_price.toFixed(2)}</td>
                     <td class="px-4 py-3 font-medium text-gray-900">¥${(s.sell_price * s.quantity).toFixed(2)}</td>
+                    <td class="px-4 py-3 text-gray-500 whitespace-normal max-w-xs">${s.notes ?? ""}</td>
                   </tr>
                 `,
                   )

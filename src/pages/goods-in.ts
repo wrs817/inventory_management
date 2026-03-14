@@ -13,7 +13,7 @@ app.innerHTML = `<p class="text-gray-400 text-sm">Loading…</p>`;
 
 const { data, error } = await supabase
   .from("goods_in")
-  .select("*, products(name, reward_multiplier)")
+  .select("*, products(name)")
   .order("created_at", { ascending: false });
 
 if (error) {
@@ -43,6 +43,8 @@ if (error) {
                   <th class="px-4 py-3 font-medium">进价</th>
                   <th class="px-4 py-3 font-medium">总成本</th>
                   <th class="px-4 py-3 font-medium">积分价值</th>
+                  <th class="px-4 py-3 font-medium">可积分</th>
+                  <th class="px-4 py-3 font-medium">备注</th>
                 </tr>
               </thead>
               <tbody>
@@ -51,11 +53,13 @@ if (error) {
                     (g) => `
                   <tr class="border-t border-gray-100 hover:bg-gray-50">
                     <td class="px-4 py-3 text-gray-500">${new Date(g.created_at).toLocaleDateString("zh-CN")}</td>
-                    <td class="px-4 py-3 font-medium text-gray-900">${(g.products as unknown as { name: string; reward_multiplier: number } | null)?.name ?? "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900">${(g.products as unknown as { name: string } | null)?.name ?? "—"}</td>
                     <td class="px-4 py-3 text-gray-700">${g.quantity}</td>
                     <td class="px-4 py-3 text-gray-700">¥${g.purchase_price.toFixed(2)}</td>
                     <td class="px-4 py-3 font-medium text-gray-900">¥${(g.purchase_price * g.quantity).toFixed(2)}</td>
-                    <td class="px-4 py-3 text-indigo-600 font-medium">${((g.products as unknown as { name: string; reward_multiplier: number } | null)?.reward_multiplier ?? 0) * g.purchase_price * g.quantity}</td>
+                    <td class="px-4 py-3 text-indigo-600 font-medium">${g.reward_points}</td>
+                    <td class="px-4 py-3">${g.can_collect_reward_points ? '<span class="text-green-600">✓</span>' : '<span class="text-gray-300">—</span>'}</td>
+                    <td class="px-4 py-3 text-gray-500 whitespace-normal max-w-xs">${g.notes ?? ""}</td>
                   </tr>
                 `,
                   )

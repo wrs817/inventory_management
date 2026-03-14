@@ -21,6 +21,7 @@ export interface Sale {
   sell_price: number;
   quantity: number;
   sale_date: string;
+  notes: string | null;
   created_at: string;
   // joined
   products?: Pick<Product, "name">;
@@ -32,6 +33,9 @@ export interface GoodsIn {
   product_id: string;
   purchase_price: number;
   quantity: number;
+  can_collect_reward_points: boolean;
+  reward_points: number;
+  notes: string | null;
   created_at: string;
   // joined
   products?: Pick<Product, "name">;

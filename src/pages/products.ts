@@ -14,7 +14,7 @@ const app = document.getElementById("app")!;
 async function loadProducts(search = "", category = "") {
   app.innerHTML = `<p class="text-gray-400 text-sm">加载中…</p>`;
 
-  let query = supabase.from("products").select("*").order("name");
+  let query = supabase.from("products").select("id, name, category, quantity, reward_multiplier").order("name");
   if (search) query = query.ilike("name", `%${search}%`);
   if (category) query = query.eq("category", category);
   const { data, error } = await query;

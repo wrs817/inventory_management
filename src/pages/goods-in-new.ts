@@ -47,6 +47,17 @@ app.innerHTML = `
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
       </div>
+      <div class="flex items-center gap-2">
+        <input id="can_collect_reward_points" type="checkbox" checked
+          class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+        <label for="can_collect_reward_points" class="text-sm font-medium text-gray-700">可积分</label>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+        <textarea id="notes" rows="2"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          placeholder="可选"></textarea>
+      </div>
       <div class="pt-2">
         <button type="submit"
           class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2 rounded-lg text-sm transition">
@@ -89,6 +100,8 @@ form.addEventListener("submit", async (e) => {
     purchase_price: parseFloat(
       (document.getElementById("purchase_price") as HTMLInputElement).value,
     ),
+    can_collect_reward_points: (document.getElementById("can_collect_reward_points") as HTMLInputElement).checked,
+    notes: (document.getElementById("notes") as HTMLTextAreaElement).value.trim() || null,
   });
 
   if (error) {
