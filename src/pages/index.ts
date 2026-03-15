@@ -23,10 +23,12 @@ const monthLabel = now.toLocaleDateString("zh-CN", {
   month: "long",
 });
 
+const userId = (await supabase.auth.getUser()).data.user!.id;
+
 const [productsRes, totalsRes, salesMonthRes, goodsInMonthRes, borrowingsRes] = await Promise.all([
   supabase.from("products").select("id, quantity"),
   // Aggregate all-time totals via RPC — avoids fetching every row
-  supabase.rpc("get_dashboard_totals", { p_user_id: (await supabase.auth.getUser()).data.user!.id }),
+  supabase.rpc("get_dashboard_totals", { p_user_id: userId }),
   // month-only for the dashboard tables
   supabase
     .from("sales")

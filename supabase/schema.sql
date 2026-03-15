@@ -166,10 +166,17 @@ DECLARE
   v_new_total   integer;
   v_fully_done  boolean;
 BEGIN
+  -- Lock the row to prevent concurrent returns from double-restoring stock
   SELECT quantity, return_quantity
     INTO v_borrow_qty, v_returned
     FROM borrows
-   WHERE id = p_borrow_id;
+   WHERE id = p_borrow_id
+     FOR UPDATE;
+
+  -- Guard: don't allow returning more than remaining
+  IF v_returned + p_quantity > v_borrow_qty THEN
+    RAISE EXCEPTION 'return quantity exceeds borrowed amount';
+  END IF;
 
   v_new_total  := v_returned + p_quantity;
   v_fully_done := v_new_total >= v_borrow_qty;
