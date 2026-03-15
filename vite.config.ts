@@ -4,6 +4,9 @@ import mkcert from 'vite-plugin-mkcert'
 
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/kucun/' : '/',
+  server: {
+    host: true,
+  },
   plugins: [tailwindcss(), mkcert()],
   build: {
     rollupOptions: {
