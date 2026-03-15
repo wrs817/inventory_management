@@ -83,7 +83,8 @@ const fillPrice = (productId: string) => {
 productSelect.addEventListener("change", () => fillPrice(productSelect.value));
 
 renderScanButton(document.getElementById("scan-btn-container")!, (barcode) => {
-  const match = productList.find((p) => p.barcode?.trim() === barcode.trim());
+  const scanned = barcode.trim().toUpperCase();
+  const match = productList.find((p) => p.barcode?.trim().toUpperCase() === scanned);
   if (match) {
     productSelect.value = match.id;
     fillPrice(match.id);

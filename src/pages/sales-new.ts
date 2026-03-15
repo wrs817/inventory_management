@@ -117,7 +117,8 @@ productSelect.addEventListener("change", () => updatePricePicker(productSelect.v
 
 // Wire up scan button
 renderScanButton(document.getElementById("scan-btn-container")!, (barcode) => {
-  const match = productList.find((p) => p.barcode === barcode);
+  const scanned = barcode.trim().toUpperCase();
+  const match = productList.find((p) => p.barcode?.trim().toUpperCase() === scanned);
   if (match) {
     productSelect.value = match.id;
     updatePricePicker(match.id);

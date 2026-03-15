@@ -69,7 +69,8 @@ const errorMsg = document.getElementById("error-msg")!;
 const productSelect = document.getElementById("product_id") as HTMLSelectElement;
 
 renderScanButton(document.getElementById("scan-btn-container")!, (barcode) => {
-  const match = productList.find((p) => p.barcode?.trim() === barcode.trim());
+  const scanned = barcode.trim().toUpperCase();
+  const match = productList.find((p) => p.barcode?.trim().toUpperCase() === scanned);
   if (match) {
     productSelect.value = match.id;
     errorMsg.classList.add("hidden");
