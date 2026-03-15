@@ -26,26 +26,27 @@ app.innerHTML = `
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">分类</label>
-        <select id="category"
+        <label class="block text-sm font-medium text-gray-700 mb-1">分类 <span class="text-red-500">*</span></label>
+        <select id="category" required
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+          <option value="">— 请选择分类 —</option>
           ${CATEGORIES.map((c) => `<option value="${c}">${c}</option>`).join("")}
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">积分倍率</label>
-        <input id="reward_multiplier" type="number" step="0.01" min="0" value="1"
+        <label class="block text-sm font-medium text-gray-700 mb-1">积分倍率 <span class="text-red-500">*</span></label>
+        <input id="reward_multiplier" type="number" step="0.01" min="0" required
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">原价（¥）</label>
-          <input id="original_price" type="number" step="0.01" min="0"
+          <label class="block text-sm font-medium text-gray-700 mb-1">原价（¥）<span class="text-red-500">*</span></label>
+          <input id="original_price" type="number" step="0.01" min="0" required
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">会员价（¥）</label>
-          <input id="member_price" type="number" step="0.01" min="0"
+          <label class="block text-sm font-medium text-gray-700 mb-1">会员价（¥）<span class="text-red-500">*</span></label>
+          <input id="member_price" type="number" step="0.01" min="0" required
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         </div>
       </div>
@@ -81,8 +82,6 @@ form.addEventListener("submit", async (e) => {
   if (!user) return;
 
   const barcodeVal = (document.getElementById("barcode") as HTMLInputElement).value.trim();
-  const originalPriceVal = (document.getElementById("original_price") as HTMLInputElement).value;
-  const memberPriceVal = (document.getElementById("member_price") as HTMLInputElement).value;
 
   const { error } = await supabase.from("products").insert({
     user_id: user.id,
@@ -90,9 +89,9 @@ form.addEventListener("submit", async (e) => {
     category: (document.getElementById("category") as HTMLSelectElement).value,
     reward_multiplier: parseFloat(
       (document.getElementById("reward_multiplier") as HTMLInputElement).value,
-    ),
-    original_price: originalPriceVal ? parseFloat(originalPriceVal) : null,
-    member_price: memberPriceVal ? parseFloat(memberPriceVal) : null,
+    ) || 0,
+    original_price: parseFloat((document.getElementById("original_price") as HTMLInputElement).value),
+    member_price: parseFloat((document.getElementById("member_price") as HTMLInputElement).value),
     barcode: barcodeVal || null,
     quantity: 0,
   });
