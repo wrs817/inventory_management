@@ -14,12 +14,16 @@ CREATE TABLE products (
   category          text NOT NULL DEFAULT '',
   reward_multiplier numeric NOT NULL DEFAULT 1,
   quantity          integer NOT NULL DEFAULT 0,
+  original_price    numeric,
+  member_price      numeric,
   barcode           text,
   created_at        timestamptz NOT NULL DEFAULT now()
 );
 
 -- Run this if the table already exists:
 -- ALTER TABLE products ADD COLUMN IF NOT EXISTS barcode text;
+-- ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price numeric;
+-- ALTER TABLE products ADD COLUMN IF NOT EXISTS member_price numeric;
 -- ALTER TABLE sales ADD COLUMN IF NOT EXISTS notes text;
 -- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS notes text;
 -- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS can_collect_reward_points boolean NOT NULL DEFAULT true;

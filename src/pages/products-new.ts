@@ -37,6 +37,18 @@ app.innerHTML = `
         <input id="reward_multiplier" type="number" step="0.01" min="0" value="1"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
       </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">原价（¥）</label>
+          <input id="original_price" type="number" step="0.01" min="0"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">会员价（¥）</label>
+          <input id="member_price" type="number" step="0.01" min="0"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+      </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">条形码 / 二维码</label>
         <input id="barcode" type="text" placeholder="可选，用于扫码快速选产品"
@@ -69,6 +81,8 @@ form.addEventListener("submit", async (e) => {
   if (!user) return;
 
   const barcodeVal = (document.getElementById("barcode") as HTMLInputElement).value.trim();
+  const originalPriceVal = (document.getElementById("original_price") as HTMLInputElement).value;
+  const memberPriceVal = (document.getElementById("member_price") as HTMLInputElement).value;
 
   const { error } = await supabase.from("products").insert({
     user_id: user.id,
@@ -77,6 +91,8 @@ form.addEventListener("submit", async (e) => {
     reward_multiplier: parseFloat(
       (document.getElementById("reward_multiplier") as HTMLInputElement).value,
     ),
+    original_price: originalPriceVal ? parseFloat(originalPriceVal) : null,
+    member_price: memberPriceVal ? parseFloat(memberPriceVal) : null,
     barcode: barcodeVal || null,
     quantity: 0,
   });

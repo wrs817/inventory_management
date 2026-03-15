@@ -13,9 +13,9 @@ const app = document.getElementById("app")!;
 
 const { data: products } = await supabase
   .from("products")
-  .select("id, name, barcode")
+  .select("id, name, barcode, member_price")
   .order("name");
-const productList = (products ?? []) as Pick<Product, "id" | "name" | "barcode">[];
+const productList = (products ?? []) as Pick<Product, "id" | "name" | "barcode" | "member_price">[];
 
 app.innerHTML = `
   <div class="mb-6">
@@ -71,11 +71,22 @@ app.innerHTML = `
 const form = document.getElementById("goods-in-form") as HTMLFormElement;
 const errorMsg = document.getElementById("error-msg")!;
 const productSelect = document.getElementById("product_id") as HTMLSelectElement;
+const purchasePriceInput = document.getElementById("purchase_price") as HTMLInputElement;
+
+const fillPrice = (productId: string) => {
+  const match = productList.find((p) => p.id === productId);
+  if (match?.member_price != null) {
+    purchasePriceInput.value = match.member_price.toString();
+  }
+};
+
+productSelect.addEventListener("change", () => fillPrice(productSelect.value));
 
 renderScanButton(document.getElementById("scan-btn-container")!, (barcode) => {
   const match = productList.find((p) => p.barcode?.trim() === barcode.trim());
   if (match) {
     productSelect.value = match.id;
+    fillPrice(match.id);
     errorMsg.classList.add("hidden");
   } else {
     errorMsg.textContent = `未找到条形码对应的产品：${barcode}`;

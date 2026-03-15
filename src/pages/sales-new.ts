@@ -13,11 +13,11 @@ const app = document.getElementById("app")!;
 
 const { data: products } = await supabase
   .from("products")
-  .select("id, name, quantity, barcode")
+  .select("id, name, quantity, barcode, member_price, original_price")
   .order("name");
 const productList = (products ?? []) as Pick<
   Product,
-  "id" | "name" | "quantity" | "barcode"
+  "id" | "name" | "quantity" | "barcode" | "member_price" | "original_price"
 >[];
 
 const today = new Date().toISOString().split("T")[0];
@@ -55,6 +55,7 @@ app.innerHTML = `
           <label class="block text-sm font-medium text-gray-700 mb-1">售价（¥）<span class="text-red-500">*</span></label>
           <input id="sell_price" type="number" step="0.01" min="0" required
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <div id="price-picker" class="hidden flex gap-2 mt-1.5"></div>
         </div>
       </div>
       <div>
@@ -81,12 +82,45 @@ app.innerHTML = `
 const form = document.getElementById("sale-form") as HTMLFormElement;
 const errorMsg = document.getElementById("error-msg")!;
 const productSelect = document.getElementById("product_id") as HTMLSelectElement;
+const sellPriceInput = document.getElementById("sell_price") as HTMLInputElement;
+const pricePicker = document.getElementById("price-picker")!;
+
+const updatePricePicker = (productId: string) => {
+  const match = productList.find((p) => p.id === productId);
+  pricePicker.innerHTML = "";
+  if (!match) { pricePicker.classList.add("hidden"); return; }
+
+  const options: { label: string; value: number | null }[] = [
+    { label: "会员价", value: match.member_price },
+    { label: "原价", value: match.original_price },
+  ];
+
+  const hasAny = options.some((o) => o.value != null);
+  if (!hasAny) { pricePicker.classList.add("hidden"); return; }
+
+  pricePicker.classList.remove("hidden");
+  options.forEach(({ label, value }) => {
+    if (value == null) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "text-xs px-2 py-1 rounded border border-indigo-300 text-indigo-600 hover:bg-indigo-50 transition";
+    btn.textContent = `${label} ¥${value.toFixed(2)}`;
+    btn.addEventListener("click", () => { sellPriceInput.value = value.toString(); });
+    pricePicker.appendChild(btn);
+  });
+
+  // Auto-fill member price by default
+  if (match.member_price != null) sellPriceInput.value = match.member_price.toString();
+};
+
+productSelect.addEventListener("change", () => updatePricePicker(productSelect.value));
 
 // Wire up scan button
 renderScanButton(document.getElementById("scan-btn-container")!, (barcode) => {
   const match = productList.find((p) => p.barcode === barcode);
   if (match) {
     productSelect.value = match.id;
+    updatePricePicker(match.id);
   } else {
     errorMsg.textContent = `未找到条形码对应的产品：${barcode}`;
     errorMsg.classList.remove("hidden");

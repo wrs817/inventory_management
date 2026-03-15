@@ -14,7 +14,7 @@ const app = document.getElementById("app")!;
 async function loadProducts(search = "", category = "") {
   app.innerHTML = `<p class="text-gray-400 text-sm">加载中…</p>`;
 
-  let query = supabase.from("products").select("id, name, category, quantity, reward_multiplier").order("name");
+  let query = supabase.from("products").select("id, name, category, quantity, reward_multiplier, original_price, member_price").order("name");
   if (search) query = query.ilike("name", `%${search}%`);
   if (category) query = query.eq("category", category);
   const { data, error } = await query;
@@ -56,6 +56,8 @@ async function loadProducts(search = "", category = "") {
                   <th class="px-4 py-3 font-medium">名称</th>
                   <th class="px-4 py-3 font-medium">分类</th>
                   <th class="px-4 py-3 font-medium">库存</th>
+                  <th class="px-4 py-3 font-medium">原价</th>
+                  <th class="px-4 py-3 font-medium">会员价</th>
                   <th class="px-4 py-3 font-medium">积分倍率</th>
                   <th class="px-4 py-3 font-medium"></th>
                 </tr>
@@ -68,6 +70,8 @@ async function loadProducts(search = "", category = "") {
                     <td class="px-4 py-3 font-medium text-gray-900">${p.name}</td>
                     <td class="px-4 py-3 text-gray-500">${p.category}</td>
                     <td class="px-4 py-3 ${p.quantity <= 5 ? "text-red-600 font-semibold" : "text-gray-700"}">${p.quantity}</td>
+                    <td class="px-4 py-3 text-gray-700">${p.original_price != null ? "¥" + (p.original_price as number).toFixed(2) : "—"}</td>
+                    <td class="px-4 py-3 text-gray-700">${p.member_price != null ? "¥" + (p.member_price as number).toFixed(2) : "—"}</td>
                     <td class="px-4 py-3 text-gray-700">${p.reward_multiplier}×</td>
                     <td class="px-4 py-3 text-right">
                       <a href="${url("/pages/products-edit.html")}?id=${p.id}"
