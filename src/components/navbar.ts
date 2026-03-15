@@ -7,6 +7,7 @@ export function renderNavbar(container: HTMLElement, activePage: string): void {
     { href: url("/pages/products.html"), label: "产品", icon: "📦" },
     { href: url("/pages/sales.html"), label: "销售", icon: "💰" },
     { href: url("/pages/goods-in.html"), label: "入库", icon: "📥" },
+    { href: url("/pages/borrow.html"), label: "借货", icon: "🔄" },
   ];
 
   container.innerHTML = `

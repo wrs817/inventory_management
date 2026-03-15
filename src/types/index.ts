@@ -42,3 +42,18 @@ export interface GoodsIn {
   // joined
   products?: Pick<Product, "name">;
 }
+
+export interface Borrow {
+  id: string;
+  user_id: string;
+  product_id: string;
+  borrower: string;
+  quantity: number;
+  return_quantity: number;
+  borrow_date: string;
+  is_returned: boolean;
+  returned_at: string | null;
+  created_at: string;
+  // joined
+  products?: Pick<Product, "name">;
+}

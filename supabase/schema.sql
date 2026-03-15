@@ -30,15 +30,15 @@ CREATE TABLE products (
 -- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS reward_points numeric NOT NULL DEFAULT 0;
 
 CREATE TABLE sales (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  product_id  uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
-  customer    text NOT NULL,
-  sell_price  numeric NOT NULL,
-  quantity    integer NOT NULL CHECK (quantity > 0),
-  sale_date   timestamptz NOT NULL DEFAULT now(),
-  notes       text,
-  created_at  timestamptz NOT NULL DEFAULT now()
+  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id        uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  product_id     uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  customer       text NOT NULL,
+  sell_price     numeric NOT NULL,
+  quantity       integer NOT NULL CHECK (quantity > 0),
+  sale_date      timestamptz NOT NULL DEFAULT now(),
+  notes          text,
+  created_at     timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE goods_in (
@@ -52,6 +52,23 @@ CREATE TABLE goods_in (
   notes                     text,
   created_at                timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE borrows (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  product_id      uuid NOT NULL REFERENCES products(id) ON DELETE RESTRICT,
+  borrower        text NOT NULL,
+  quantity        integer NOT NULL CHECK (quantity > 0),
+  return_quantity integer NOT NULL DEFAULT 0 CHECK (return_quantity >= 0),
+  borrow_date     timestamptz NOT NULL DEFAULT now(),
+  is_returned     boolean NOT NULL DEFAULT false,
+  returned_at     timestamptz,
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+-- Run this if the table already exists:
+-- ALTER TABLE borrows ADD COLUMN IF NOT EXISTS return_quantity integer NOT NULL DEFAULT 0;
+-- ALTER TABLE borrows DROP COLUMN IF EXISTS notes;
 
 -- ============================================================
 -- 2. TRIGGERS — auto-update product quantity
@@ -116,6 +133,63 @@ CREATE TRIGGER trg_calc_reward_points
 BEFORE INSERT ON goods_in
 FOR EACH ROW EXECUTE FUNCTION calc_reward_points_on_goods_in();
 
+-- Deduct stock when a borrow is inserted
+CREATE OR REPLACE FUNCTION deduct_stock_on_borrow()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE products SET quantity = quantity - NEW.quantity WHERE id = NEW.product_id;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_deduct_stock_borrow
+AFTER INSERT ON borrows
+FOR EACH ROW EXECUTE FUNCTION deduct_stock_on_borrow();
+
+-- Restore stock for a partial or full return (called via RPC)
+-- Returns the new is_returned status (true when fully returned)
+CREATE OR REPLACE FUNCTION restore_stock(
+  p_borrow_id   uuid,
+  p_product_id  uuid,
+  p_quantity    integer   -- amount being returned this time
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_borrow_qty  integer;
+  v_returned    integer;
+  v_new_total   integer;
+  v_fully_done  boolean;
+BEGIN
+  SELECT quantity, return_quantity
+    INTO v_borrow_qty, v_returned
+    FROM borrows
+   WHERE id = p_borrow_id;
+
+  v_new_total  := v_returned + p_quantity;
+  v_fully_done := v_new_total >= v_borrow_qty;
+
+  -- Update the borrow row
+  UPDATE borrows
+     SET return_quantity = v_new_total,
+         is_returned     = v_fully_done,
+         returned_at     = CASE WHEN v_fully_done THEN now() ELSE returned_at END
+   WHERE id = p_borrow_id;
+
+  -- Restore stock on the product
+  UPDATE products
+     SET quantity = quantity + p_quantity
+   WHERE id = p_product_id;
+
+  RETURN v_fully_done;
+END;
+$$;
+
 -- ============================================================
 -- 3. INDEXES
 -- ============================================================
@@ -133,6 +207,10 @@ CREATE INDEX idx_sales_product_id     ON sales (product_id);
 CREATE INDEX idx_goods_in_user_created_at ON goods_in (user_id, created_at DESC);
 CREATE INDEX idx_goods_in_product_id      ON goods_in (product_id);
 
+-- borrows: list ordered by borrow_date
+CREATE INDEX idx_borrows_user_borrow_date ON borrows (user_id, borrow_date DESC);
+CREATE INDEX idx_borrows_product_id       ON borrows (product_id);
+
 -- ============================================================
 -- 4. ROW LEVEL SECURITY
 -- ============================================================
@@ -140,6 +218,7 @@ CREATE INDEX idx_goods_in_product_id      ON goods_in (product_id);
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE sales    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE goods_in ENABLE ROW LEVEL SECURITY;
+ALTER TABLE borrows  ENABLE ROW LEVEL SECURITY;
 
 -- products
 CREATE POLICY "users can view own products"   ON products FOR SELECT USING (auth.uid() = user_id);
@@ -154,3 +233,8 @@ CREATE POLICY "users can insert own sales" ON sales FOR INSERT WITH CHECK (auth.
 -- goods_in
 CREATE POLICY "users can view own goods_in"   ON goods_in FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "users can insert own goods_in" ON goods_in FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- borrows
+CREATE POLICY "users can view own borrows"   ON borrows FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "users can insert own borrows" ON borrows FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "users can update own borrows" ON borrows FOR UPDATE USING (auth.uid() = user_id);

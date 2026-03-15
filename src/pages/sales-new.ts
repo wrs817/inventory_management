@@ -41,9 +41,9 @@ app.innerHTML = `
         <div id="scan-btn-container"></div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">客户 <span class="text-red-500">*</span></label>
+        <label class="text-sm font-medium text-gray-700">客户 <span class="text-red-500">*</span></label>
         <input id="customer" type="text" required
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1" />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -151,13 +151,9 @@ form.addEventListener("submit", async (e) => {
   const { error } = await supabase.from("sales").insert({
     user_id: user.id,
     product_id: productId,
-    customer: (
-      document.getElementById("customer") as HTMLInputElement
-    ).value.trim(),
+    customer: (document.getElementById("customer") as HTMLInputElement).value.trim(),
     quantity,
-    sell_price: parseFloat(
-      (document.getElementById("sell_price") as HTMLInputElement).value,
-    ),
+    sell_price: parseFloat((document.getElementById("sell_price") as HTMLInputElement).value),
     sale_date: (document.getElementById("sale_date") as HTMLInputElement).value,
     notes: (document.getElementById("notes") as HTMLTextAreaElement).value.trim() || null,
   });

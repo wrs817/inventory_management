@@ -23,7 +23,7 @@ const monthLabel = now.toLocaleDateString("zh-CN", {
   month: "long",
 });
 
-const [productsRes, salesAllRes, goodsInAllRes, salesMonthRes, goodsInMonthRes] = await Promise.all([
+const [productsRes, salesAllRes, goodsInAllRes, salesMonthRes, goodsInMonthRes, borrowingsRes] = await Promise.all([
   supabase.from("products").select("id, quantity"),
   supabase
     .from("sales")
@@ -46,6 +46,11 @@ const [productsRes, salesAllRes, goodsInAllRes, salesMonthRes, goodsInMonthRes] 
     .gte("created_at", monthStart)
     .lt("created_at", monthEnd)
     .order("created_at", { ascending: false }),
+  // borrowings from borrows table
+  supabase
+    .from("borrows")
+    .select("id, borrower, quantity, return_quantity, borrow_date, is_returned, products(name, id)")
+    .order("borrow_date", { ascending: false }),
 ]);
 
 const products = productsRes.data ?? [];
@@ -81,7 +86,9 @@ const goodsIn = (goodsInMonthRes.data ?? []) as unknown as {
 }[];
 
 const lowStock = products.filter((p) => p.quantity <= 5);
-const totalSalesIncome = salesAll.reduce(
+
+type BorrowRow = { id: string; borrower: string; quantity: number; return_quantity: number; borrow_date: string; is_returned: boolean; products: { name: string; id: string } | null };
+const borrowRows = (borrowingsRes.data ?? []) as unknown as BorrowRow[];const totalSalesIncome = salesAll.reduce(
   (sum, s) => sum + s.sell_price * s.quantity,
   0,
 );
@@ -201,4 +208,35 @@ app.innerHTML = `
       }
     </div>
   </div>
+
+  ${borrowRows.length > 0 ? `
+  <div class="mt-6 bg-white rounded-xl shadow-sm border border-amber-200 p-5">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="text-amber-500">⚠</span>
+      <h2 class="font-semibold text-gray-800">借货记录（${borrowRows.length} 笔）</h2>
+    </div>
+    <table class="w-full text-sm">
+      <thead><tr class="text-left text-gray-400 border-b">
+        <th class="pb-2">借货人</th>
+        <th class="pb-2">产品</th>
+        <th class="pb-2 text-center">数量</th>
+        <th class="pb-2 text-right">借货日期</th>
+        <th class="pb-2 text-right">状态</th>
+      </tr></thead>
+      <tbody>
+        ${borrowRows.map((b) => `
+        <tr class="border-b last:border-0">
+          <td class="py-2 font-medium text-gray-900">${b.borrower}</td>
+          <td class="py-2 text-gray-700">${b.products?.name ?? "—"}</td>
+          <td class="py-2 text-center text-gray-700">${b.quantity}${b.return_quantity > 0 && !b.is_returned ? ` <span class="text-xs text-gray-400">（剩 ${b.quantity - b.return_quantity}）</span>` : ""}</td>
+          <td class="py-2 text-right text-gray-400">${new Date(b.borrow_date).toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" })}</td>
+          <td class="py-2 text-right">
+            ${b.is_returned
+              ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">已还</span>'
+              : '<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">未还</span>'}
+          </td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+  </div>` : ""}
 `;
