@@ -14,7 +14,7 @@ app.innerHTML = `<p class="text-gray-400 text-sm">加载中…</p>`;
 const render = async () => {
   const { data, error } = await supabase
     .from("borrows")
-    .select("id, product_id, borrower, quantity, return_quantity, borrow_date, is_returned, returned_at, products(name)")
+    .select("id, product_id, borrower, quantity, return_quantity, borrow_date, is_returned, products(name)")
     .order("borrow_date", { ascending: false });
 
   if (error) {

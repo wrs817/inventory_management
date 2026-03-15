@@ -68,7 +68,6 @@ CREATE TABLE borrows (
   return_quantity integer NOT NULL DEFAULT 0 CHECK (return_quantity >= 0),
   borrow_date     timestamptz NOT NULL DEFAULT now(),
   is_returned     boolean NOT NULL DEFAULT false,
-  returned_at     timestamptz,
   created_at      timestamptz NOT NULL DEFAULT now()
 );
 

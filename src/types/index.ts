@@ -52,7 +52,6 @@ export interface Borrow {
   return_quantity: number;
   borrow_date: string;
   is_returned: boolean;
-  returned_at: string | null;
   created_at: string;
   // joined
   products?: Pick<Product, "name">;
