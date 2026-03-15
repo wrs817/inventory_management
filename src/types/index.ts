@@ -1,4 +1,4 @@
-export const CATEGORIES = ["个人护理", "化妆品", "保健品"] as const;
+export const CATEGORIES = ["日用品", "家科产品", "雅姿", "纽崔莱", "XS"] as const;
 
 export type Category = (typeof CATEGORIES)[number];
 
