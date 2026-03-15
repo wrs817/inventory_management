@@ -18,6 +18,8 @@ export default defineConfig(({ command }) => ({
         'sales-new': 'pages/sales-new.html',
         'goods-in': 'pages/goods-in.html',
         'goods-in-new': 'pages/goods-in-new.html',
+        'borrow': 'pages/borrow.html',
+        'borrow-new': 'pages/borrow-new.html',
       },
     },
   },
