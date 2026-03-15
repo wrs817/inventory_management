@@ -190,6 +190,19 @@ BEGIN
 END;
 $$;
 
+-- Aggregate totals for the dashboard (avoids full table scan client-side)
+CREATE OR REPLACE FUNCTION get_dashboard_totals(p_user_id uuid)
+RETURNS json
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT json_build_object(
+    'total_sales_income',   COALESCE((SELECT SUM(sell_price * quantity)    FROM sales    WHERE user_id = p_user_id), 0),
+    'total_goods_in_spend', COALESCE((SELECT SUM(purchase_price * quantity) FROM goods_in WHERE user_id = p_user_id), 0)
+  );
+$$;
+
 -- ============================================================
 -- 3. INDEXES
 -- ============================================================
@@ -198,6 +211,8 @@ $$;
 CREATE INDEX idx_products_user_name     ON products (user_id, name);
 CREATE INDEX idx_products_user_category ON products (user_id, category);
 CREATE INDEX idx_products_name_trgm     ON products USING gin (name gin_trgm_ops);
+-- barcode lookup on form pages
+CREATE INDEX idx_products_barcode ON products (barcode) WHERE barcode IS NOT NULL;
 
 -- sales: list ordered by sale_date, FK join
 CREATE INDEX idx_sales_user_sale_date ON sales (user_id, sale_date DESC);
@@ -207,9 +222,10 @@ CREATE INDEX idx_sales_product_id     ON sales (product_id);
 CREATE INDEX idx_goods_in_user_created_at ON goods_in (user_id, created_at DESC);
 CREATE INDEX idx_goods_in_product_id      ON goods_in (product_id);
 
--- borrows: list ordered by borrow_date
+-- borrows: list ordered by borrow_date; filter unreturned
 CREATE INDEX idx_borrows_user_borrow_date ON borrows (user_id, borrow_date DESC);
 CREATE INDEX idx_borrows_product_id       ON borrows (product_id);
+CREATE INDEX idx_borrows_is_returned      ON borrows (user_id, is_returned) WHERE is_returned = false;
 
 -- ============================================================
 -- 4. ROW LEVEL SECURITY

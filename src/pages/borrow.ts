@@ -14,7 +14,7 @@ app.innerHTML = `<p class="text-gray-400 text-sm">加载中…</p>`;
 const render = async () => {
   const { data, error } = await supabase
     .from("borrows")
-    .select("*, products(name)")
+    .select("id, product_id, borrower, quantity, return_quantity, borrow_date, is_returned, returned_at, products(name)")
     .order("borrow_date", { ascending: false });
 
   if (error) {
@@ -22,7 +22,7 @@ const render = async () => {
     return;
   }
 
-  const borrows = (data ?? []) as Borrow[];
+  const borrows = (data ?? []) as unknown as Borrow[];
 
   app.innerHTML = `
     <div class="flex items-center justify-between mb-6">

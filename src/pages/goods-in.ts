@@ -13,13 +13,13 @@ app.innerHTML = `<p class="text-gray-400 text-sm">Loading…</p>`;
 
 const { data, error } = await supabase
   .from("goods_in")
-  .select("*, products(name)")
+  .select("id, product_id, purchase_price, quantity, can_collect_reward_points, reward_points, notes, created_at, products(name)")
   .order("created_at", { ascending: false });
 
 if (error) {
   app.innerHTML = `<p class="text-red-500 text-sm">${error.message}</p>`;
 } else {
-  const records = (data ?? []) as GoodsIn[];
+  const records = (data ?? []) as unknown as GoodsIn[];
 
   app.innerHTML = `
     <div class="flex items-center justify-between mb-6">

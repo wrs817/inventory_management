@@ -23,16 +23,10 @@ const monthLabel = now.toLocaleDateString("zh-CN", {
   month: "long",
 });
 
-const [productsRes, salesAllRes, goodsInAllRes, salesMonthRes, goodsInMonthRes, borrowingsRes] = await Promise.all([
+const [productsRes, totalsRes, salesMonthRes, goodsInMonthRes, borrowingsRes] = await Promise.all([
   supabase.from("products").select("id, quantity"),
-  supabase
-    .from("sales")
-    .select("id, sell_price, quantity, sale_date, products(name)")
-    .order("sale_date", { ascending: false }),
-  supabase
-    .from("goods_in")
-    .select("id, purchase_price, quantity, reward_points, created_at, products(name)")
-    .order("created_at", { ascending: false }),
+  // Aggregate all-time totals via RPC — avoids fetching every row
+  supabase.rpc("get_dashboard_totals", { p_user_id: (await supabase.auth.getUser()).data.user!.id }),
   // month-only for the dashboard tables
   supabase
     .from("sales")
@@ -54,21 +48,7 @@ const [productsRes, salesAllRes, goodsInAllRes, salesMonthRes, goodsInMonthRes, 
 ]);
 
 const products = productsRes.data ?? [];
-const salesAll = (salesAllRes.data ?? []) as unknown as {
-  id: string;
-  sell_price: number;
-  quantity: number;
-  sale_date: string;
-  products: { name: string } | null;
-}[];
-const goodsInAll = (goodsInAllRes.data ?? []) as unknown as {
-  id: string;
-  purchase_price: number;
-  quantity: number;
-  reward_points: number;
-  created_at: string;
-  products: { name: string } | null;
-}[];
+const totals = (totalsRes.data ?? {}) as { total_sales_income: number; total_goods_in_spend: number };
 const sales = (salesMonthRes.data ?? []) as unknown as {
   id: string;
   sell_price: number;
@@ -88,14 +68,10 @@ const goodsIn = (goodsInMonthRes.data ?? []) as unknown as {
 const lowStock = products.filter((p) => p.quantity <= 5);
 
 type BorrowRow = { id: string; borrower: string; quantity: number; return_quantity: number; borrow_date: string; is_returned: boolean; products: { name: string; id: string } | null };
-const borrowRows = (borrowingsRes.data ?? []) as unknown as BorrowRow[];const totalSalesIncome = salesAll.reduce(
-  (sum, s) => sum + s.sell_price * s.quantity,
-  0,
-);
-const totalGoodsInSpend = goodsInAll.reduce(
-  (sum, g) => sum + g.purchase_price * g.quantity,
-  0,
-);
+const borrowRows = (borrowingsRes.data ?? []) as unknown as BorrowRow[];
+
+const totalSalesIncome = totals.total_sales_income ?? 0;
+const totalGoodsInSpend = totals.total_goods_in_spend ?? 0;
 
 const monthSalesTotal = sales.reduce(
   (sum, s) => sum + s.sell_price * s.quantity,
