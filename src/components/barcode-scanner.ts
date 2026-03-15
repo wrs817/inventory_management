@@ -5,6 +5,7 @@ let instanceCount = 0;
 export function renderScanButton(
   container: HTMLElement,
   onResult: (barcode: string) => void,
+  label = "扫码选产品",
 ) {
   const uid = `scanner-video-${++instanceCount}`;
 
@@ -14,7 +15,7 @@ export function renderScanButton(
 
   const hint = document.createElement("p");
   hint.className = "text-xs text-gray-400 text-center py-3 px-4";
-  hint.textContent = "将条形码或二维码对准摄像头";
+  hint.textContent = "将条形码对准摄像头";
 
   const video = document.createElement("video") as HTMLVideoElement;
   video.id = uid;
@@ -30,7 +31,7 @@ export function renderScanButton(
   header.className = "flex items-center justify-between px-5 py-4 border-b";
   const titleEl = document.createElement("span");
   titleEl.className = "font-semibold text-gray-800";
-  titleEl.textContent = "扫描条形码 / 二维码";
+  titleEl.textContent = "扫描条形码";
   header.appendChild(titleEl);
   header.appendChild(closeBtn);
 
@@ -49,7 +50,7 @@ export function renderScanButton(
   btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
     <path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M3 17v2a2 2 0 002 2h2M17 3h2a2 2 0 012 2v2M17 21h2a2 2 0 002-2v-2"/>
     <line x1="8" y1="12" x2="16" y2="12" stroke-linecap="round"/>
-  </svg> 扫码选产品`;
+  </svg> ${label}`;
   container.appendChild(btn);
 
   let reader: BrowserMultiFormatReader | null = null;
@@ -63,7 +64,7 @@ export function renderScanButton(
   };
 
   const startScanner = async () => {
-    hint.textContent = "将条形码或二维码对准摄像头";
+    hint.textContent = "将条形码对准摄像头";
     modal.style.display = "flex";
     try {
       reader = new BrowserMultiFormatReader();

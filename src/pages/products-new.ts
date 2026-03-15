@@ -51,8 +51,8 @@ app.innerHTML = `
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">条形码 / 二维码</label>
-        <input id="barcode" type="text" placeholder="可选，用于扫码快速选产品"
+        <label class="block text-sm font-medium text-gray-700 mb-1">条形码 <span class="text-red-500">*</span></label>
+        <input id="barcode" type="text" placeholder="扫描或手动输入" required
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
         <div id="barcode-scan-btn"></div>
       </div>
@@ -72,7 +72,7 @@ const errorMsg = document.getElementById("error-msg")!;
 // Scan button populates the barcode field
 renderScanButton(document.getElementById("barcode-scan-btn")!, (barcode) => {
   (document.getElementById("barcode") as HTMLInputElement).value = barcode;
-});
+}, "扫码录入条形码");
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
