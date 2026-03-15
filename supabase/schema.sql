@@ -29,6 +29,12 @@ CREATE TABLE products (
 -- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS can_collect_reward_points boolean NOT NULL DEFAULT true;
 -- ALTER TABLE goods_in ADD COLUMN IF NOT EXISTS reward_points numeric NOT NULL DEFAULT 0;
 
+-- Drop borrow/return columns that were added to goods_in and sales:
+-- ALTER TABLE goods_in DROP COLUMN IF EXISTS return_person;
+-- ALTER TABLE goods_in DROP COLUMN IF EXISTS is_return;
+-- ALTER TABLE sales    DROP COLUMN IF EXISTS is_borrowing;
+-- ALTER TABLE sales    DROP COLUMN IF EXISTS borrower;
+
 CREATE TABLE sales (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id        uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
